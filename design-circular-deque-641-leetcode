@@ -1,0 +1,115 @@
+class MyCircularDeque {
+    int capacity; 
+    int front;
+    int rear;
+    int size; 
+    int* queue;
+public:
+    MyCircularDeque(int k) {
+    this->capacity = k;
+       queue = new int[capacity];
+       front = -1;
+        rear = -1;
+        size = 0;
+    }
+    
+    bool insertFront(int value) {
+        if(isFull())
+            return false; 
+        size++;
+        if(front == -1){
+            front=0;
+            rear=0;
+            queue[front] = value; 
+            return true;
+        }
+        if(front == 0){
+            front = capacity-1;
+        }else{
+            front--;  
+        }   
+    
+        queue[front] = value; 
+        return true;
+    }
+    
+    bool insertLast(int value) {
+        if (isFull()) {
+            return false;
+        }
+
+        rear = (rear + 1) % capacity;
+        queue[rear] = value;
+
+        if (front == -1)
+            front = rear;
+
+        size++;
+        return true; 
+    }
+    
+    bool deleteFront() {
+        if (isEmpty()) {
+            return false;
+        }
+
+        int value = queue[front];
+
+        
+        if (front == rear) {
+            front = -1;
+            rear = -1;
+        } else {
+            front = (front + 1) % capacity;
+        }
+
+        size--;
+        return true;
+    }
+    
+    bool deleteLast() {
+        if(isEmpty())
+            return false;
+        if(rear<=0){
+            rear = capacity - 1;
+        }else{
+            rear--;
+        }
+                
+        size--;    
+        return true;
+    }
+    
+    int getFront() {
+        if(isEmpty())
+            return -1;
+        return queue[front];  
+    }
+    
+    int getRear() {
+        if(isEmpty())
+            return -1;
+        return queue[rear];    
+    }
+    
+    bool isEmpty() {
+        return size == 0; 
+    }
+    
+    bool isFull() {
+        return size == capacity;
+    }
+};
+
+/**
+ * Your MyCircularDeque object will be instantiated and called as such:
+ * MyCircularDeque* obj = new MyCircularDeque(k);
+ * bool param_1 = obj->insertFront(value);
+ * bool param_2 = obj->insertLast(value);
+ * bool param_3 = obj->deleteFront();
+ * bool param_4 = obj->deleteLast();
+ * int param_5 = obj->getFront();
+ * int param_6 = obj->getRear();
+ * bool param_7 = obj->isEmpty();
+ * bool param_8 = obj->isFull();
+ */
