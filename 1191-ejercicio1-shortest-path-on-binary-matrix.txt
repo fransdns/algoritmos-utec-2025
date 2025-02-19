@@ -1,0 +1,87 @@
+class ListaAdyacencia {
+private:
+    struct Nodo {
+        int fila, columna, costo;
+        Nodo* siguiente;
+    };
+    Nodo** lista;
+    int n;
+
+public:
+    ListaAdyacencia(int tamano) {
+        n = tamano;
+        lista = new Nodo*[n * n]();
+    }
+
+    void agregarArista(int f1, int c1, int f2, int c2, int costo) {
+        int idx = f1 * n + c1;
+        Nodo* nuevo = new Nodo{f2, c2, costo, lista[idx]};
+        lista[idx] = nuevo;
+    }
+
+    Nodo* obtenerVecinos(int fila, int columna) {
+        return lista[fila * n + columna];
+    }
+
+    ~ListaAdyacencia() {
+        for (int i = 0; i < n * n; ++i) {
+            Nodo* actual = lista[i];
+            while (actual) {
+                Nodo* temp = actual;
+                actual = actual->siguiente;
+                delete temp;
+            }
+        }
+        delete[] lista;
+    }
+};
+
+class Solution {
+public:
+    int shortestPathBinaryMatrix(vector<vector<int>>& grid) {
+        int n = grid.size();
+        if (grid[0][0] == 1 || grid[n - 1][n - 1] == 1) return -1; 
+
+        int movimientos[8][2] = {{-1,-1}, {-1,0}, {-1,1}, {0,-1}, {0,1}, {1,-1}, {1,0}, {1,1}};
+        
+        ListaAdyacencia grafo(n);
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (grid[i][j] == 0) {
+                    for (auto& mov : movimientos) {
+                        int ni = i + mov[0], nj = j + mov[1];
+                        if (ni >= 0 && ni < n && nj >= 0 && nj < n && grid[ni][nj] == 0)
+                            grafo.agregarArista(i, j, ni, nj, 1);
+                    }
+                }
+            }
+        }
+
+        priority_queue<pair<int, pair<int, int>>, vector<pair<int, pair<int, int>>>, greater<>> pq;
+        int** distancias = new int*[n];
+        for (int i = 0; i < n; ++i) {
+            distancias[i] = new int[n];
+            fill(distancias[i], distancias[i] + n, numeric_limits<int>::max());
+        }
+        distancias[0][0] = 1;
+        pq.push({1, {0, 0}});
+
+        while (!pq.empty()) {
+            auto [dist, nodo] = pq.top(); pq.pop();
+            int fila = nodo.first, columna = nodo.second;
+            if (fila == n - 1 && columna == n - 1) {
+                for (int i = 0; i < n; ++i) delete[] distancias[i];
+                delete[] distancias;
+                return dist;
+            }
+            for (auto* vecino = grafo.obtenerVecinos(fila, columna); vecino; vecino = vecino->siguiente) {
+                int nuevaDist = dist + vecino->costo;
+                if (nuevaDist < distancias[vecino->fila][vecino->columna]) {
+                    distancias[vecino->fila][vecino->columna] = nuevaDist;
+                    pq.push({nuevaDist, {vecino->fila, vecino->columna}});
+                }
+            }
+        }
+        return -1;
+    }
+};
